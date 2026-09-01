@@ -7,8 +7,10 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/julienschmidt/httprouter"
 	"greenlight.codewithyash.dev/internal/validator"
@@ -138,4 +140,99 @@ func (app *application) readInt(qs url.Values, key string, defaultValue int, v *
 	}
 
 	return convertedVal
+}
+
+
+/* More readable way
+func (app *application) background(fn func()) {
+	app.wg.Add(1)
+
+	go func ()  {
+		defer app.wg.Done()
+
+		defer func() {
+			if err := recover(); err != nil {
+				app.logger.Error(fmt.Sprintf("%v", err))
+			}
+		} ()
+
+		fn()
+	} ()
+}
+*/
+
+
+/* Modern way using waitgroup.go */
+func (app *application) background(fn func()) {
+	app.wg.Go(func() {
+		defer func() {
+			if err := recover(); err != nil {
+				app.logger.Error(fmt.Sprintf("%v", err))
+			}
+		} ()
+
+		fn()
+	})
+}
+
+
+/* Config setup using env */
+func getEnv(key string) string {
+	return os.Getenv(key)
+}
+
+func (cfg *config) getConfiguration() error {
+	var err error
+
+	cfg.env = getEnv("ENV")
+
+	cfg.port, err = strconv.Atoi(getEnv("PORT"))
+	if err != nil {
+		return err
+	}
+
+	cfg.db.dsn = getEnv("DB_DSN")
+
+	cfg.db.maxOpenConns, err = strconv.Atoi(getEnv("DB_MAX_OPEN_CONNS"))
+	if err != nil {
+		return err
+	}
+
+	cfg.db.maxIdleConns, err = strconv.Atoi(getEnv("DB_MAX_IDLE_CONNS"))
+	if err != nil {
+		return err
+	}
+
+	cfg.db.maxIdleTime, err = time.ParseDuration(getEnv("DB_MAX_IDLE_TIME"))
+	if err != nil {
+		return err
+	}
+
+	cfg.limiter.rps, err = strconv.ParseFloat(getEnv("LIMITER_RPS"), 64)
+	if err != nil {
+		return err
+	}
+
+	cfg.limiter.burst, err = strconv.Atoi(getEnv("LIMITER_BURST"))
+	if err != nil {
+		return err
+	}
+
+	cfg.limiter.enabled, err = strconv.ParseBool(getEnv("LIMITER_ENABLED"))
+	if err != nil {
+		return err
+	}
+
+	cfg.smtp.host = getEnv("SMTP_HOST")
+
+	cfg.smtp.port, err = strconv.Atoi(getEnv("SMTP_PORT"))
+	if err != nil {
+		return err
+	}
+
+	cfg.smtp.username = getEnv("SMTP_USERNAME")
+	cfg.smtp.password = getEnv("SMTP_PASSWORD")
+	cfg.smtp.sender = getEnv("SMTP_SENDER")
+
+	return nil
 }
