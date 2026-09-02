@@ -11,14 +11,16 @@ import (
 	"greenlight.codewithyash.dev/internal/validator"
 )
 
+var AnonymousUser = &User{}
+
 type User struct {
-	ID			int64		`json:"id"`
-	CreatedAt 	time.Time	`json:"created_at"`
-	Name		string		`json:"name"`
-	Email		string		`json:"email"`
-	Password	password	`json:"-"`
-	Activated	bool		`json:"activated"`
-	Version		int			`json:"-"`
+	ID        int64     `json:"id"`
+	CreatedAt time.Time `json:"created_at"`
+	Name      string    `json:"name"`
+	Email     string    `json:"email"`
+	Password  password  `json:"-"`
+	Activated bool      `json:"activated"`
+	Version   int       `json:"-"`
 }
 
 var (
@@ -26,14 +28,17 @@ var (
 )
 
 type UserModel struct {
-	DB	*sql.DB
+	DB *sql.DB
 }
 
 type password struct {
-	plaintext 	*string
-	hash		[]byte
+	plaintext *string
+	hash      []byte
 }
-
+ 
+func (u *User) IsAnonymous() bool {
+	return u == AnonymousUser
+}
 
 func (p *password) Set(plaintextPassword string) error {
 	hash, err := bcrypt.GenerateFromPassword([]byte(plaintextPassword), 12)
@@ -48,7 +53,7 @@ func (p *password) Set(plaintextPassword string) error {
 }
 
 func (p *password) Matches(plaintextPassword string) (bool, error) {
-	err := bcrypt.CompareHashAndPassword([]byte(p.hash),[]byte(plaintextPassword))
+	err := bcrypt.CompareHashAndPassword([]byte(p.hash), []byte(plaintextPassword))
 	if err != nil {
 		switch {
 		case errors.Is(err, bcrypt.ErrMismatchedHashAndPassword):
@@ -74,7 +79,7 @@ func ValidatePasswordPlaintext(v *validator.Validator, password string) {
 
 func ValidateUser(v *validator.Validator, user *User) {
 	v.Check(user.Name != "", "name", "must be provided")
-	v.Check(len(user.Name) <= 500, "name", "must not be more than 500 character" )
+	v.Check(len(user.Name) <= 500, "name", "must not be more than 500 character")
 
 	ValidateEmail(v, user.Email)
 
@@ -82,13 +87,10 @@ func ValidateUser(v *validator.Validator, user *User) {
 		ValidatePasswordPlaintext(v, *user.Password.plaintext)
 	}
 
-
 	if user.Password.hash == nil {
 		panic("missing hash for user")
 	}
 }
-
-
 
 func (m *UserModel) Insert(user *User) error {
 	query := `INSERT INTO users (name, email, password_hash, activated)
@@ -97,7 +99,7 @@ func (m *UserModel) Insert(user *User) error {
 
 	args := []any{user.Name, user.Email, user.Password.hash, user.Activated}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 3 * time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
 	err := m.DB.QueryRowContext(ctx, query, args...).Scan(&user.ID, &user.CreatedAt, &user.Version)
@@ -112,7 +114,6 @@ func (m *UserModel) Insert(user *User) error {
 
 	return nil
 }
-
 
 func (m *UserModel) GetByEmail(email string) (*User, error) {
 	query := `SELECT id, created_at, name, email, password_hash, activated, version
