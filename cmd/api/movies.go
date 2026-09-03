@@ -12,10 +12,10 @@ import (
 
 func (app *application) createMovieHandler(w http.ResponseWriter, r *http.Request) {
 	var createMovieInput struct {
-		Title 	string		`json:"title"`
-		Year  	int32		`json:"year"`
-		Runtime data.Runtime`json:"runtime"`
-		Genres	[]string	`json:"genres"`
+		Title   string       `json:"title"`
+		Year    int32        `json:"year"`
+		Runtime data.Runtime `json:"runtime"`
+		Genres  []string     `json:"genres"`
 	}
 
 	err := app.readJSON(w, r, &createMovieInput)
@@ -25,10 +25,10 @@ func (app *application) createMovieHandler(w http.ResponseWriter, r *http.Reques
 	}
 
 	movie := &data.Movie{
-		Title: createMovieInput.Title,
-		Year: createMovieInput.Year,
+		Title:   createMovieInput.Title,
+		Year:    createMovieInput.Year,
 		Runtime: createMovieInput.Runtime,
-		Genres: createMovieInput.Genres,
+		Genres:  createMovieInput.Genres,
 	}
 
 	v := validator.New()
@@ -52,7 +52,6 @@ func (app *application) createMovieHandler(w http.ResponseWriter, r *http.Reques
 		app.serverErrorResponse(w, r, err)
 	}
 }
-
 
 func (app *application) showMovieHandler(w http.ResponseWriter, r *http.Request) {
 	id, err := app.readIDParam(r)
@@ -79,7 +78,6 @@ func (app *application) showMovieHandler(w http.ResponseWriter, r *http.Request)
 	}
 }
 
-
 func (app *application) updateMovieHandler(w http.ResponseWriter, r *http.Request) {
 	id, err := app.readIDParam(r)
 	if err != nil {
@@ -98,7 +96,7 @@ func (app *application) updateMovieHandler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	if r.Header.Get("X-Expected-Version") !="" {
+	if r.Header.Get("X-Expected-Version") != "" {
 		if strconv.Itoa(int(movie.Version)) != r.Header.Get("X-Expected-Version") {
 			app.editConflictResponse(w, r)
 			return
@@ -106,10 +104,10 @@ func (app *application) updateMovieHandler(w http.ResponseWriter, r *http.Reques
 	}
 
 	var input struct {
-		Title 	*string			`json:"title"`
-		Year 	*int32			`json:"year"`
-		Runtime *data.Runtime 	`json:"runtime"`
-		Genres  []string	 	`json:"genres"`
+		Title   *string       `json:"title"`
+		Year    *int32        `json:"year"`
+		Runtime *data.Runtime `json:"runtime"`
+		Genres  []string      `json:"genres"`
 	}
 
 	err = app.readJSON(w, r, &input)
@@ -134,7 +132,7 @@ func (app *application) updateMovieHandler(w http.ResponseWriter, r *http.Reques
 	v := validator.New()
 
 	if data.ValidateMovie(v, movie); !v.Valid() {
-		app.failedValidationResponse(w, r,v.Errors)
+		app.failedValidationResponse(w, r, v.Errors)
 		return
 	}
 
@@ -154,7 +152,6 @@ func (app *application) updateMovieHandler(w http.ResponseWriter, r *http.Reques
 		app.serverErrorResponse(w, r, err)
 	}
 }
-
 
 func (app *application) deleteMovieHandler(w http.ResponseWriter, r *http.Request) {
 	id, err := app.readIDParam(r)
@@ -182,11 +179,10 @@ func (app *application) deleteMovieHandler(w http.ResponseWriter, r *http.Reques
 
 func (app *application) listMoviesHandler(w http.ResponseWriter, r *http.Request) {
 	var input struct {
-		Title 		string
-		Genres		[]string
+		Title  string
+		Genres []string
 		data.Filters
 	}
-
 
 	v := validator.New()
 

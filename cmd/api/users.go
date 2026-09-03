@@ -9,12 +9,11 @@ import (
 	"greenlight.codewithyash.dev/internal/validator"
 )
 
-
 func (app *application) registerUserHandler(w http.ResponseWriter, r *http.Request) {
 	var input struct {
-		Name		string `json:"name"`
-		Email		string `json:"email"`
-		Password	string `json:"password"`
+		Name     string `json:"name"`
+		Email    string `json:"email"`
+		Password string `json:"password"`
 	}
 
 	err := app.readJSON(w, r, &input)
@@ -24,8 +23,8 @@ func (app *application) registerUserHandler(w http.ResponseWriter, r *http.Reque
 	}
 
 	user := &data.User{
-		Name: input.Name,
-		Email: input.Email,
+		Name:      input.Name,
+		Email:     input.Email,
 		Activated: false,
 	}
 
@@ -64,7 +63,7 @@ func (app *application) registerUserHandler(w http.ResponseWriter, r *http.Reque
 
 		data := map[string]any{
 			"activationToken": token.Plaintext,
-			"userID": user.ID,
+			"userID":          user.ID,
 		}
 
 		err = app.mailer.Send(user.Email, "user_welcome.tmpl", data)
@@ -79,7 +78,6 @@ func (app *application) registerUserHandler(w http.ResponseWriter, r *http.Reque
 		app.serverErrorResponse(w, r, err)
 	}
 }
-
 
 func (app *application) activateUserHandler(w http.ResponseWriter, r *http.Request) {
 	var input struct {

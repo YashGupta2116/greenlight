@@ -35,7 +35,7 @@ type password struct {
 	plaintext *string
 	hash      []byte
 }
- 
+
 func (u *User) IsAnonymous() bool {
 	return u == AnonymousUser
 }

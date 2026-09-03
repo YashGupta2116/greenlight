@@ -7,18 +7,18 @@ import (
 )
 
 type Filters struct {
-	Page 			int
-	PageSize 		int
-	Sort 			string
-	SortSafelist 	[]string
+	Page         int
+	PageSize     int
+	Sort         string
+	SortSafelist []string
 }
 
 type Metadata struct {
-	CurrentPage 	int  	`json:"current_page,omitempty"`
-	PageSize 		int 	`json:"page_size,omitempty"`
-	FirstPage 		int		`json:"first_page,omitempty"`
-	LastPage 		int		`json:"last_page,omitempty"`
-	TotalRecords	int		`json:"total_records,omitempty"`
+	CurrentPage  int `json:"current_page,omitempty"`
+	PageSize     int `json:"page_size,omitempty"`
+	FirstPage    int `json:"first_page,omitempty"`
+	LastPage     int `json:"last_page,omitempty"`
+	TotalRecords int `json:"total_records,omitempty"`
 }
 
 func calculateMethaData(totalRecords, page, pageSize int) Metadata {
@@ -27,14 +27,13 @@ func calculateMethaData(totalRecords, page, pageSize int) Metadata {
 	}
 
 	return Metadata{
-		CurrentPage: page,
-		PageSize: pageSize,
-		FirstPage: 1,
-		LastPage: (totalRecords + pageSize - 1) / pageSize,
+		CurrentPage:  page,
+		PageSize:     pageSize,
+		FirstPage:    1,
+		LastPage:     (totalRecords + pageSize - 1) / pageSize,
 		TotalRecords: totalRecords,
 	}
 }
-
 
 func ValidateFilter(v *validator.Validator, f Filters) {
 	v.Check(f.Page > 0, "page", "must be greater than zero")

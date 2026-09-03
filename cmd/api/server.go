@@ -14,12 +14,12 @@ import (
 
 func (app *application) serve() error {
 	srv := &http.Server{
-		Addr: fmt.Sprintf(":%d", app.config.port),
-		Handler: app.routes(),
-		IdleTimeout: time.Minute,
-		ReadTimeout: 5 * time.Second,
+		Addr:         fmt.Sprintf(":%d", app.config.port),
+		Handler:      app.routes(),
+		IdleTimeout:  time.Minute,
+		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 10 * time.Second,
-		ErrorLog: slog.NewLogLogger(app.logger.Handler(), slog.LevelError),
+		ErrorLog:     slog.NewLogLogger(app.logger.Handler(), slog.LevelError),
 	}
 
 	shutdownError := make(chan error)
@@ -43,7 +43,7 @@ func (app *application) serve() error {
 
 		app.wg.Wait()
 		shutdownError <- nil
-	} ()
+	}()
 
 	app.logger.Info("starting server", "addr", srv.Addr, "env", app.config.env)
 
@@ -52,7 +52,7 @@ func (app *application) serve() error {
 		return err
 	}
 
-	err = <- shutdownError
+	err = <-shutdownError
 	if err != nil {
 		return err
 	}

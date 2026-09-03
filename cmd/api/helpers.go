@@ -18,7 +18,6 @@ import (
 
 type envelope map[string]any
 
-
 func (app *application) readIDParam(r *http.Request) (int64, error) {
 	params := httprouter.ParamsFromContext(r.Context())
 	id, err := strconv.ParseInt(params.ByName("id"), 10, 64)
@@ -28,8 +27,7 @@ func (app *application) readIDParam(r *http.Request) (int64, error) {
 	return id, nil
 }
 
-
-func (app *application) writeJSON(w http.ResponseWriter, status int,  data envelope, headers http.Header) error {
+func (app *application) writeJSON(w http.ResponseWriter, status int, data envelope, headers http.Header) error {
 	js, err := json.MarshalIndent(data, "", "\t")
 	if err != nil {
 		return err
@@ -71,16 +69,16 @@ func (app *application) readJSON(w http.ResponseWriter, r *http.Request, dst any
 			return errors.New("body contains badly-formed JSON")
 
 		case errors.As(err, &unmarshalTypeError):
-			if unmarshalTypeError.Field !="" {
+			if unmarshalTypeError.Field != "" {
 				return fmt.Errorf("body contains incorrect JSON type for field %q", unmarshalTypeError.Field)
 			}
-			return  fmt.Errorf("body contains incorrect JSON type (at character %d)", unmarshalTypeError.Offset)
+			return fmt.Errorf("body contains incorrect JSON type (at character %d)", unmarshalTypeError.Offset)
 
 		case errors.Is(err, io.EOF):
 			return errors.New("body must not be empty")
 
-		case strings.HasPrefix(err.Error(),"json: unknown field "):
-			fieldName := strings.TrimPrefix(err.Error(),"json: unknown field ")
+		case strings.HasPrefix(err.Error(), "json: unknown field "):
+			fieldName := strings.TrimPrefix(err.Error(), "json: unknown field ")
 			return fmt.Errorf("body contains unknown key %s", fieldName)
 
 		case errors.As(err, &maxBytesError):
@@ -123,7 +121,7 @@ func (app *application) readCSV(qs url.Values, key string, defaultValue []string
 		return defaultValue
 	}
 
-	return  strings.Split(s, ",")
+	return strings.Split(s, ",")
 }
 
 func (app *application) readInt(qs url.Values, key string, defaultValue int, v *validator.Validator) int {
@@ -141,7 +139,6 @@ func (app *application) readInt(qs url.Values, key string, defaultValue int, v *
 
 	return convertedVal
 }
-
 
 /* More readable way
 func (app *application) background(fn func()) {
@@ -161,7 +158,6 @@ func (app *application) background(fn func()) {
 }
 */
 
-
 /* Modern way using waitgroup.go */
 func (app *application) background(fn func()) {
 	app.wg.Go(func() {
@@ -169,12 +165,11 @@ func (app *application) background(fn func()) {
 			if err := recover(); err != nil {
 				app.logger.Error(fmt.Sprintf("%v", err))
 			}
-		} ()
+		}()
 
 		fn()
 	})
 }
-
 
 /* Config setup using env */
 func getEnv(key string) string {
